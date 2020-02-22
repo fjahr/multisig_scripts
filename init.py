@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
+import subprocess
 
 # 1/ Generate a new receive address:
 #   ./bitcoin-cli [-testnet|-mainnet] -datadir=[DATADIR] -rpcwallet=[WALLET] getnewaddress "test_addr" bech32
@@ -16,10 +18,29 @@ import argparse
 
 def init():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--test', type=str, default="foo")
+    parser.add_argument('-a', '--amount', type=float)
+    parser.add_argument('-t', '--to', type=str)
     args = parser.parse_args()
 
-    print(args.test)
+    create_funded = subprocess.run(['./bitcoin-cli',
+                                    '-rpcwallet=multisig',
+                                    'walletcreatefundedpsbt',
+                                    '[]',
+                                    '"{\"{}\": {}}"'.format(args.to, args.amount),
+                                    '0',
+                                    '"{\"subtractFeeFromOutputs\":[0], \"includeWatching\":true}"',
+                                    'true'], stdout=subprocess.PIPE)
+
+    parsed_create = json.loads(create_funded)
+
+    decode = subprocess.run(['./bitcoin-cli',
+                             'decodepsbt',
+                             parsed_create['psbt']], stdout=subprocess.PIPE)
+
+    parsed_decode = json.loads(decode)
+
+    for out in parsed_decode['tx']['vout']:
+        print('{}: {}\n'.format(out['scriptPubKey']['addresses'][0], out['value'])
 
 if __name__ == '__main__':
     init()
