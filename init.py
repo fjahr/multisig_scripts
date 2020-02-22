@@ -19,19 +19,14 @@ import subprocess
 def init():
     parser = argparse.ArgumentParser()
     parser.add_argument('-a', '--amount', type=float)
+    parser.add_argument('-t', '--to', type=str)
     args = parser.parse_args()
-
-    receive_address = subprocess.run(['./bitcoin-cli',
-                                      '-rpcwallet=multisig',
-                                      'getnewaddress',
-                                      '""',
-                                      'bech32'], stdout=subprocess.PIPE)
 
     create_funded = subprocess.run(['./bitcoin-cli',
                                     '-rpcwallet=multisig',
                                     'walletcreatefundedpsbt',
                                     '[]',
-                                    '"{\"{}\": {}}"'.format(receive_address, args.amount),
+                                    '"{\"{}\": {}}"'.format(args.to, args.amount),
                                     '0',
                                     '"{\"subtractFeeFromOutputs\":[0], \"includeWatching\":true}"',
                                     'true'], stdout=subprocess.PIPE)
