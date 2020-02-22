@@ -12,7 +12,7 @@ import argparse
 # 3/ Decode PSBT:
 #   ./bitcoin-cli [-testnet|-mainnet] -datadir=[DATADIR] decodepsbt [PSBT]
 #
-# 4/ Show receive and change address to the user
+# 4/ Show receive address, change address and the amount sent to each address to the user
 
 def init():
     parser = argparse.ArgumentParser()
