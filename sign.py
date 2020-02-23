@@ -40,7 +40,7 @@ def sign():
         print("ERROR: No device detected, please check your connection");
         sys.exit()
     elif (len(result) > 1) and (not args.type):
-        print("ERROR: More than one devices detected, please specify device type [-t trezor|coldcard]")
+        print("ERROR: More than one device detected, please specify device type [-t trezor|coldcard]")
         sys.exit()
     else:
         device_type = result[0]['type']
