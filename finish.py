@@ -19,6 +19,7 @@ import sys
 
 def finish():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-datadir', type=str, default="/Users/hugohn/Projects/multisig_wallet1")
     parser.add_argument('-p1', '--psbt1', type=str)
     parser.add_argument('-p2', '--psbt2', type=str)
     args = parser.parse_args()
@@ -27,6 +28,9 @@ def finish():
         'combinepsbt',
         '\'["{}", "{}"]\''.format(args.psbt1, args.psbt2)
     ]
+    if args.datadir:
+        combine_args.insert(0, '-datadir=' + args.datadir)
+
     combined = subprocess.Popen(['./bitcoin-cli ' + ' '.join(combine_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
     combined_result = combined.communicate()[0].decode().rstrip()
 
@@ -34,6 +38,8 @@ def finish():
         'finalizepsbt'
         ' "{}"'.format(combined_result)
     ]
+    if args.datadir:
+        finalize_args.insert(0, '-datadir=' + args.datadir)
     finalized = subprocess.Popen(['./bitcoin-cli ' + ' '.join(finalize_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
 
     result = finalized.communicate()
@@ -43,6 +49,8 @@ def finish():
         'decoderawtransaction',
         raw_tx
     ]
+    if args.datadir:
+        decode_args.insert(0, '-datadir=' + args.datadir)
 
     decoded = subprocess.Popen(['./bitcoin-cli ' + ' '.join(decode_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
 
@@ -59,6 +67,8 @@ def finish():
             'sendrawtransaction',
             raw_tx
         ]
+        if args.datadir:
+            send_args.insert(0, '-datadir=' + args.datadir)
         send = subprocess.Popen(['./bitcoin-cli ' + ' '.join(send_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
         result = send.communicate()
         print("sent!")
