@@ -23,45 +23,44 @@ def finish():
     parser.add_argument('-p2', '--psbt2', type=str)
     args = parser.parse_args()
 
-    combined = subprocess.Popen(['./bitcoin-cli',
-                                '-testnet',
-                                '-rpcwallet=multisig',
-                                'combinepsbt',
-                                args.psbt1,
-                                args.psbt2], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    combine_args = [
+        'combinepsbt',
+        '\'["{}", "{}"]\''.format(args.psbt1, args.psbt2)
+    ]
+    combined = subprocess.Popen(['./bitcoin-cli ' + ' '.join(combine_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    combined_result = combined.communicate()[0].decode().rstrip()
 
-    out, err = combined.communicate()
-    parsed_combined = json.load(out)
+    finalize_args = [
+        'finalizepsbt'
+        ' "{}"'.format(combined_result)
+    ]
+    finalized = subprocess.Popen(['./bitcoin-cli ' + ' '.join(finalize_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
 
-    finalized = subprocess.Popen(['./bitcoin-cli',
-                                '-testnet',
-                                '-rpcwallet=multisig',
-                                'decoderawtransaction',
-                                parsed_combined.psbt], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    result = finalized.communicate()
+    raw_tx = json.loads(result[0].decode())['hex']
 
-    out, err = finalized.communicate()
-    parsed_finalized = json.load(out)
+    decode_args = [
+        'decoderawtransaction',
+        raw_tx
+    ]
 
-    decoded = subprocess.Popen(['./bitcoin-cli',
-                                '-testnet',
-                                '-rpcwallet=multisig',
-                                'finalizepsbt',
-                                parsed_finalized.hex], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    decoded = subprocess.Popen(['./bitcoin-cli ' + ' '.join(decode_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
 
-    out, err = decoded.communicate()
-    parsed_decoded = json.load(out)
+    result = decoded.communicate()
+    parsed_decoded = json.loads(result[0].decode())
 
     print(parsed_decoded)
 
     sys.stdout.write("Send this transaction? [y/n]")
-    choice = raw_input().lower()
+    choice = input().lower()
 
     if choice == 'y':
-        subprocess.Popen(['./bitcoin-cli',
-                                '-testnet',
-                                '-rpcwallet=multisig',
-                                'sendrawtransaction',
-                                parsed_finalized.hex], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        send_args = [
+            'sendrawtransaction',
+            raw_tx
+        ]
+        send = subprocess.Popen(['./bitcoin-cli ' + ' '.join(send_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+        result = send.communicate()
         print("sent!")
     else:
         print("not sent!")
