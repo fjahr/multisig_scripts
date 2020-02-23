@@ -52,7 +52,7 @@ def sign():
 
     hwi_params = ['-t', device_type, '-d', device_path, 'signtx', args.psbt]
     if args.testnet:
-        hwi_params.append('--testnet')
+        hwi_params.insert(0, '--testnet')
     sign_result = run_hwi(hwi_params)
     print(sign_result)
 

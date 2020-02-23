@@ -54,7 +54,12 @@ def init():
     parsed_decode = run_command(decode_args)
 
     for out in parsed_decode['tx']['vout']:
-        print('{}: {}\n'.format(out['scriptPubKey']['addresses'][0], out['value']))
+        is_send_addr = out['scriptPubKey']['addresses'][0] == args.to
+        print('{} {}: {}\n'.format(('[TO ADDR]\n' if is_send_addr else '[CHANGE ADDR]\n'), out['scriptPubKey']['addresses'][0], out['value']))
+
+    print('[PSBT]\n' + parsed_create['psbt'])
+    print('\n')
+    print("Please sign the above PSBT with your hardware wallets\n")
 
 if __name__ == '__main__':
     init()

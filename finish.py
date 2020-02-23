@@ -57,7 +57,7 @@ def finish():
     result = decoded.communicate()
     parsed_decoded = json.loads(result[0].decode())
 
-    print(parsed_decoded)
+    print(json.dumps(parsed_decoded, indent=4))
 
     sys.stdout.write("Send this transaction? [y/n]")
     choice = input().lower()
@@ -70,8 +70,9 @@ def finish():
         if args.datadir:
             send_args.insert(0, '-datadir=' + args.datadir)
         send = subprocess.Popen(['./bitcoin-cli ' + ' '.join(send_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
-        result = send.communicate()
-        print("sent!")
+        result = send.communicate())
+        print("sent!\n")
+        print("TXID: " + parsed_decoded['txid'])
     else:
         print("not sent!")
 
