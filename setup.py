@@ -42,6 +42,12 @@ def run_bitcoincli(args):
     result = proc.communicate()
     return json.loads(result[0].decode())
 
+def get_descriptors(xpubs, origins):
+    return ''
+
+def create_wallet_with_descriptors(wallet_name, descriptors):
+    return
+
 def get_xpubs_and_origins(num_xpubs, testnet):
     xpubs = []
     key_origins = []
@@ -101,6 +107,7 @@ def get_xpubs_and_origins(num_xpubs, testnet):
 def init():
     parser = argparse.ArgumentParser()
     parser.add_argument("--testnet", default=False, action="store_true" , help="sign for testnet")
+    parser.add_argument('-wallet', type=str, default="multisig_bech32", help="name of multisig wallet")
     parser.add_argument('-m', type=int, default=2)
     parser.add_argument('-n', type=int, default=3)
     args = parser.parse_args()
@@ -112,7 +119,11 @@ def init():
     print(xpubs)
     print(key_origins)
 
-    
+    descriptors = get_descriptors(xpubs, key_origins)
+    create_wallet_with_descriptors(args.wallet, descriptors)
+
+    return
+
 
 
 if __name__ == '__main__':
