@@ -33,11 +33,22 @@ def run_hwi(args):
     result = proc.communicate()
     return json.loads(result[0].decode())
 
-def get_xpubs(num_xpubs, testnet):
-    xpubs = []
-    bip_32_derive_path = 'm/48h/1h/0h/2h'
+def run_bitcoincli(args):
+    cli_args = []
+    for arg in args:
+        cli_args.append(shlex.quote(arg))
+    
+    proc = subprocess.Popen(['./bitcoin-cli ' + ' '.join(cli_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    result = proc.communicate()
+    return json.loads(result[0].decode())
 
-    for _ in num_xpubs:
+def get_xpubs_and_origins(num_xpubs, testnet):
+    xpubs = []
+    key_origins = []
+    bip_32_derive_path = 'm/48h/1h/0h/2h'
+    origin_derive_path = 'm/48h'
+
+    for _ in range(num_xpubs):
         result = run_hwi(['enumerate'])
 
         device_type = ''
@@ -58,15 +69,33 @@ def get_xpubs(num_xpubs, testnet):
         getxpub_params = ['-t', device_type, '-d', device_path, 'getxpub', bip_32_derive_path]
         if testnet:
             getxpub_params.insert(0, '--testnet')
-        xpub = run_hwi(getxpub_params)
+        xpub_result = run_hwi(getxpub_params)
 
-        print(xpub)
-        xpubs.append(xpub)
+        print(xpub_result['xpub'])
+        xpubs.append(xpub_result['xpub'])
 
-        print("%d XPUB extracted, please unplug and connect the next device, press Enter to continue\n", len(xpubs))
+        #   hwi -t trezor --testnet -d [DEVICE_PATH] getxpub m/48h
+        #   bx base58-decode “[XPUB @ m/48h]” | cut -c 11-18
+        #   printf "[XPUB @ m/48h]" | base58 -dc | xxd -p -c 2048 | cut -c 11-18
+
+        getorigin_params = ['-t', device_type, '-d', device_path, 'getxpub', origin_derive_path]
+        if testnet:
+            getorigin_params.insert(0, '--testnet')
+        origin_result = run_hwi(getorigin_params)
+
+        proc = subprocess.Popen(['printf {} | base58 -dc | xxd -p -c 2048 | cut -c 11-18'.format(origin_result['xpub'])], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+        fingerprint_result = proc.communicate()
+        print(fingerprint_result[0].decode().rstrip())
+        key_origins.append(fingerprint_result[0].decode().rstrip())
+
+        print("{} XPUBs extracted, please unplug and connect the next device, press Enter to continue\n".format(len(xpubs)))
         input().lower()
+    
+    if len(xpubs) != len(set(xpubs)):
+        print("Duplicate XPUBs detected, please try again")
+        sys.exit()
 
-    return xpubs
+    return [xpubs, key_origins]
 
 
 def init():
@@ -76,8 +105,14 @@ def init():
     parser.add_argument('-n', type=int, default=3)
     args = parser.parse_args()
 
-    xpubs = get_xpubs(args.testnet, args.n)
+    # xpubs, key_origins = get_xpubs_and_origins(args.n, args.testnet)
+    xpubs = ['tpubDEi3gpBhtY2GaMUSsfukbGDQaMGGv3qiBqQ7hCkLo4uVzX2sWen9ZmG8m2f44bHpFnbe7JjVzpa2stFk5zHz355aymwrisejApq8koKnZPm', 'tpubDF2rnouQaaYrXF4noGTv6rQYmx87cQ4GrUdhpvXkhtChwQPbdGTi8GA88NUaSrwZBwNsTkC9bFkkC8vDyGBVVAQTZ2AS6gs68RQXtXcCvkP', 'tpubDF5KqurbAdsSH8S9LFGvJhv4XEZsRqWCgkXCCBYSnrNjEHxDXgzFqcKR1Q1EtFcrEqJBeTvKG2RsKhgmwCKAkHRybDve37xgWmGjzS4vgFs']
+    key_origins = ['84ef4b40', '0f056943', '8375b5d4']
+
     print(xpubs)
+    print(key_origins)
+
+    
 
 
 if __name__ == '__main__':
