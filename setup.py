@@ -51,79 +51,6 @@ def run_bitcoincli(args, return_json=False, escape_quotes=False):
         return_val = result[0].decode().rstrip()
     return return_val
 
-def get_descriptors(m, xpubs, origins, datadir):
-    deriv_path = "/48'/1'/0'/2'"
-    descs = '['
-    num_descs = 2
-
-    for i in range(num_descs):
-        desc_without_checksum = '\"wsh(sortedmulti({},'.format(m)
-        for j, xpub in enumerate(xpubs):
-            desc_without_checksum += "["
-            desc_without_checksum += origins[j]
-            desc_without_checksum += deriv_path
-            desc_without_checksum += "]"
-            desc_without_checksum += xpub
-            desc_without_checksum += '/{}/*'.format(i)
-
-            if j < len(xpubs) - 1:
-                desc_without_checksum += ","
-
-        desc_without_checksum += "))\""
-
-        # print(desc_without_checksum)
-
-        # ./bitcoin-cli -datadir=[DATADIR] getdescriptorinfo [DESC]
-        descinfo_args = ['getdescriptorinfo',
-                         desc_without_checksum]
-        if datadir:
-            descinfo_args.insert(0, '-datadir=' + datadir)
-        desc_with_checksum = run_bitcoincli(descinfo_args, True)['descriptor']
-
-        # print(desc_with_checksum)
-
-        descs += "{\"desc\":\""
-        descs += desc_with_checksum
-        descs += "\""
-
-        # Add other metadata
-        descs += ","
-        descs += '"active":true,"range":1000,"timestamp":"now","internal":{},"watchonly":true'.format('false' if i == 0 else 'true')
-        descs += "}"
-
-        # Done with one descriptor string, add separator if need to
-        if i < num_descs - 1:
-            descs += ","
-
-    descs += ']'
-    print(descs)
-    return descs
-
-def create_wallet_with_descriptors(wallet_name, descriptors):
-    create_args = [
-        'createwallet',
-        '"{}"'.format(wallet_name),
-        'true',
-        'true',
-        '""',
-        'true',
-        'true'
-    ]
-
-    run_bitcoincli(create_args)
-
-    descriptor_string = '[{{\"desc\": \"{}\", \"timestamp\": \"now\", \"internal\": false, \"label\": \"multisig_addresses\"}}]'.format(descriptors)
-
-    import_args = [
-        '-rpcwallet=' + wallet_name,
-        'importdescriptors',
-        descriptor_string
-    ]
-
-    run_bitcoincli(import_args)
-
-    return True
-
 def get_xpubs_and_origins(num_xpubs, testnet):
     xpubs = []
     key_origins = []
@@ -179,6 +106,91 @@ def get_xpubs_and_origins(num_xpubs, testnet):
 
     return [xpubs, key_origins]
 
+def get_descriptors(m, xpubs, origins, datadir):
+    deriv_path = "/48'/1'/0'/2'"
+    descs = "'["
+    num_descs = 2
+
+    for i in range(num_descs):
+        desc_without_checksum = '\"wsh(sortedmulti({},'.format(m)
+        for j, xpub in enumerate(xpubs):
+            desc_without_checksum += "["
+            desc_without_checksum += origins[j]
+            desc_without_checksum += deriv_path
+            desc_without_checksum += "]"
+            desc_without_checksum += xpub
+            desc_without_checksum += '/{}/*'.format(i)
+
+            if j < len(xpubs) - 1:
+                desc_without_checksum += ","
+
+        desc_without_checksum += "))\""
+
+        # print(desc_without_checksum)
+
+        # ./bitcoin-cli -datadir=[DATADIR] getdescriptorinfo [DESC]
+        descinfo_args = ['getdescriptorinfo',
+                         desc_without_checksum]
+        if datadir:
+            descinfo_args.insert(0, '-datadir=' + datadir)
+        desc_with_checksum = run_bitcoincli(descinfo_args, True)['descriptor']
+
+        # print(desc_with_checksum)
+
+        descs += "{\"desc\":\""
+        descs += desc_with_checksum
+        descs += "\""
+
+        # Add other metadata
+        descs += ","
+        descs += '"active":true,"range":1000,"timestamp":"now","internal":{},"watchonly":true'.format('false' if i == 0 else 'true')
+        descs += "}"
+
+        # Done with one descriptor string, add separator if need to
+        if i < num_descs - 1:
+            descs += ","
+
+    descs += "]'"
+    print(descs)
+    return descs
+
+def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
+    create_args = [
+        'createwallet',
+        '"{}"'.format(wallet_name),
+        'true',
+        'true',
+        '""',
+        'true',
+        'true'
+    ]
+
+    if datadir:
+        create_args.insert(0, '-datadir=' + datadir)
+    create_result = run_bitcoincli(create_args, True)
+    if not create_result['name']:
+        print("\nFailed to create wallet\n")
+        print(create_result)
+        return False
+    else:
+        print("\nWallet '" + wallet_name + "' created.\n")
+
+    import_args = [
+        '-rpcwallet=' + wallet_name,
+        'importdescriptors',
+        descriptors
+    ]
+    if datadir:
+        import_args.insert(0, '-datadir=' + datadir)
+
+    import_result = run_bitcoincli(import_args, True)
+    for result in import_result:
+        if result['success'] != 'true':
+            print("Failed to import descriptors")
+            print(import_result)
+            return False
+
+    return True
 
 def init():
     parser = argparse.ArgumentParser()
@@ -189,6 +201,15 @@ def init():
     parser.add_argument('-n', type=int, default=3)
     args = parser.parse_args()
 
+    listwallets_args = ['listwallets']
+    if args.datadir:
+        listwallets_args.insert(0, '-datadir=' + args.datadir)
+    list_result = run_bitcoincli(listwallets_args, True)
+    for w in list_result:
+        if args.wallet == w:
+            print("Wallet '" + w + "' already exists. Please choose a different name via '-wallet [WALLET_NAME]' flag.")
+            sys.exit()
+
     # xpubs, key_origins = get_xpubs_and_origins(args.n, args.testnet)
     xpubs = ['tpubDEi3gpBhtY2GaMUSsfukbGDQaMGGv3qiBqQ7hCkLo4uVzX2sWen9ZmG8m2f44bHpFnbe7JjVzpa2stFk5zHz355aymwrisejApq8koKnZPm', 'tpubDF2rnouQaaYrXF4noGTv6rQYmx87cQ4GrUdhpvXkhtChwQPbdGTi8GA88NUaSrwZBwNsTkC9bFkkC8vDyGBVVAQTZ2AS6gs68RQXtXcCvkP', 'tpubDF5KqurbAdsSH8S9LFGvJhv4XEZsRqWCgkXCCBYSnrNjEHxDXgzFqcKR1Q1EtFcrEqJBeTvKG2RsKhgmwCKAkHRybDve37xgWmGjzS4vgFs']
     key_origins = ['84ef4b40', '0f056943', '8375b5d4']
@@ -197,10 +218,8 @@ def init():
     print(key_origins)
 
     descriptors = get_descriptors(args.m, xpubs, key_origins, args.datadir)
-    if create_wallet_with_descriptors(args.wallet, descriptors):
+    if create_wallet_with_descriptors(args.wallet, descriptors, args.datadir):
         print("Successfully created a {}-of-{}, watch-only wallet: '{}'".format(args.m, args.n, args.wallet))
-    else:
-        print("Could not create wallet")
 
 if __name__ == '__main__':
     init()
