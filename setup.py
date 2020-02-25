@@ -151,7 +151,6 @@ def get_descriptors(m, xpubs, origins, datadir):
             descs += ","
 
     descs += "]'"
-    print(descs)
     return descs
 
 def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
@@ -169,11 +168,11 @@ def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
         create_args.insert(0, '-datadir=' + datadir)
     create_result = run_bitcoincli(create_args, True)
     if not create_result['name']:
-        print("\nFailed to create wallet\n")
+        print("Failed to create wallet\n")
         print(create_result)
         return False
     else:
-        print("\nWallet '" + wallet_name + "' created.\n")
+        print("Wallet '" + wallet_name + "' created.\n")
 
     import_args = [
         '-rpcwallet=' + wallet_name,
@@ -195,7 +194,7 @@ def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
 def init():
     parser = argparse.ArgumentParser()
     parser.add_argument("--testnet", default=False, action="store_true" , help="sign for testnet")
-    parser.add_argument('-datadir', type=str, default="/Users/hugohn/Projects/multisig_wallet1")
+    parser.add_argument('-datadir', type=str, default="")
     parser.add_argument('-wallet', type=str, default="multisig_bech32", help="name of multisig wallet")
     parser.add_argument('-m', type=int, default=2)
     parser.add_argument('-n', type=int, default=3)
@@ -214,10 +213,18 @@ def init():
     xpubs = ['tpubDEi3gpBhtY2GaMUSsfukbGDQaMGGv3qiBqQ7hCkLo4uVzX2sWen9ZmG8m2f44bHpFnbe7JjVzpa2stFk5zHz355aymwrisejApq8koKnZPm', 'tpubDF2rnouQaaYrXF4noGTv6rQYmx87cQ4GrUdhpvXkhtChwQPbdGTi8GA88NUaSrwZBwNsTkC9bFkkC8vDyGBVVAQTZ2AS6gs68RQXtXcCvkP', 'tpubDF5KqurbAdsSH8S9LFGvJhv4XEZsRqWCgkXCCBYSnrNjEHxDXgzFqcKR1Q1EtFcrEqJBeTvKG2RsKhgmwCKAkHRybDve37xgWmGjzS4vgFs']
     key_origins = ['84ef4b40', '0f056943', '8375b5d4']
 
+    print("XPUBs: ")
     print(xpubs)
+    print("\n")
+    print("Master key fingerprints: ")
     print(key_origins)
+    print("\n")
 
     descriptors = get_descriptors(args.m, xpubs, key_origins, args.datadir)
+    print("Descriptors: ")
+    print(descriptors)
+    print("\n")
+
     if create_wallet_with_descriptors(args.wallet, descriptors, args.datadir):
         print("Successfully created a {}-of-{}, watch-only wallet: '{}'".format(args.m, args.n, args.wallet))
 
