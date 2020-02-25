@@ -22,8 +22,11 @@ import shlex
 # 5/ Add other metadata to the descriptors (active, range, timestamp, internal, watchonly)
 
 # 6/ Create a new wallet
+#   ./bitcoin-cli [-testnet|-mainnet] -datadir=[DATADIR] createwallet [WALLET_NAME] true true "" true true
+#   (Create a wallet that a/ has private keys disabled b/ is blank c/ has no passphrase d/ disallow coin reuse e/ is a descriptor wallet)
 
 # 7/ Import the descriptors into the new wallet
+#   ./bitcoin-cli [-testnet|-mainnet] -datadir=[DATADIR] -rpcwallet=[WALLET_NAME] importdescriptors [DESC]
 
 def run_hwi(args):
     cli_args = []
@@ -46,7 +49,7 @@ def get_descriptors(xpubs, origins):
     return ''
 
 def create_wallet_with_descriptors(wallet_name, descriptors):
-    return
+    return True
 
 def get_xpubs_and_origins(num_xpubs, testnet):
     xpubs = []
@@ -120,11 +123,10 @@ def init():
     print(key_origins)
 
     descriptors = get_descriptors(xpubs, key_origins)
-    create_wallet_with_descriptors(args.wallet, descriptors)
-
-    return
-
-
+    if create_wallet_with_descriptors(args.wallet, descriptors):
+        print("Successfully created a {}-of-{}, watch-only wallet: '{}'".format(args.m, args.n, args.wallet))
+    else:
+        print("Could not create wallet")
 
 if __name__ == '__main__':
     init()
