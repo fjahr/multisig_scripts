@@ -108,7 +108,7 @@ def get_xpubs_and_origins(num_xpubs, testnet):
 
 def get_descriptors(m, xpubs, origins, datadir):
     deriv_path = "/48'/1'/0'/2'"
-    descs = "'["
+    descs = "["
     num_descs = 2
 
     for i in range(num_descs):
@@ -150,7 +150,8 @@ def get_descriptors(m, xpubs, origins, datadir):
         if i < num_descs - 1:
             descs += ","
 
-    descs += "]'"
+    descs += "]"
+    descs = json.dumps(descs)
     return descs
 
 def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
@@ -172,7 +173,7 @@ def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
         print(create_result)
         return False
     else:
-        print("Wallet '" + wallet_name + "' created.\n")
+        print("Wallet created.\n")
 
     import_args = [
         '-rpcwallet=' + wallet_name,
@@ -184,7 +185,7 @@ def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
 
     import_result = run_bitcoincli(import_args, True)
     for result in import_result:
-        if result['success'] != 'true':
+        if result['success'] != True:
             print("Failed to import descriptors")
             print(import_result)
             return False
@@ -226,7 +227,7 @@ def init():
     print("\n")
 
     if create_wallet_with_descriptors(args.wallet, descriptors, args.datadir):
-        print("Successfully created a {}-of-{}, watch-only wallet: '{}'".format(args.m, args.n, args.wallet))
+        print("Successfully created a {}-of-{} multisig, watch-only wallet: '{}'".format(args.m, args.n, args.wallet))
 
 if __name__ == '__main__':
     init()
