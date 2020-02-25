@@ -36,17 +36,68 @@ def run_hwi(args):
     result = proc.communicate()
     return json.loads(result[0].decode())
 
-def run_bitcoincli(args):
+def run_bitcoincli(args, return_json=False, escape_quotes=False):
     cli_args = []
     for arg in args:
-        cli_args.append(shlex.quote(arg))
-    
+        if escape_quotes:
+            cli_args.append(shlex.quote(arg))
+        else:
+            cli_args.append(arg)
     proc = subprocess.Popen(['./bitcoin-cli ' + ' '.join(cli_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
     result = proc.communicate()
-    return json.loads(result[0].decode())
+    if return_json:
+        return_val = json.loads(result[0].decode())
+    else:
+        return_val = result[0].decode().rstrip()
+    return return_val
 
-def get_descriptors(xpubs, origins):
-    return ''
+def get_descriptors(m, xpubs, origins, datadir):
+    deriv_path = "/48'/1'/0'/2'"
+    descs = '['
+    num_descs = 2
+
+    for i in range(num_descs):
+        desc_without_checksum = '\"wsh(sortedmulti({},'.format(m)
+        for j, xpub in enumerate(xpubs):
+            desc_without_checksum += "["
+            desc_without_checksum += origins[j]
+            desc_without_checksum += deriv_path
+            desc_without_checksum += "]"
+            desc_without_checksum += xpub
+            desc_without_checksum += '/{}/*'.format(i)
+
+            if j < len(xpubs) - 1:
+                desc_without_checksum += ","
+
+        desc_without_checksum += "))\""
+
+        # print(desc_without_checksum)
+
+        # ./bitcoin-cli -datadir=[DATADIR] getdescriptorinfo [DESC]
+        descinfo_args = ['getdescriptorinfo',
+                         desc_without_checksum]
+        if datadir:
+            descinfo_args.insert(0, '-datadir=' + datadir)
+        desc_with_checksum = run_bitcoincli(descinfo_args, True)['descriptor']
+
+        # print(desc_with_checksum)
+
+        descs += "{\"desc\":\""
+        descs += desc_with_checksum
+        descs += "\""
+
+        # Add other metadata
+        descs += ","
+        descs += '"active":true,"range":1000,"timestamp":"now","internal":{},"watchonly":true'.format('false' if i == 0 else 'true')
+        descs += "}"
+
+        # Done with one descriptor string, add separator if need to
+        if i < num_descs - 1:
+            descs += ","
+
+    descs += ']'
+    print(descs)
+    return descs
 
 def create_wallet_with_descriptors(wallet_name, descriptors):
     return True
@@ -110,6 +161,7 @@ def get_xpubs_and_origins(num_xpubs, testnet):
 def init():
     parser = argparse.ArgumentParser()
     parser.add_argument("--testnet", default=False, action="store_true" , help="sign for testnet")
+    parser.add_argument('-datadir', type=str, default="/Users/hugohn/Projects/multisig_wallet1")
     parser.add_argument('-wallet', type=str, default="multisig_bech32", help="name of multisig wallet")
     parser.add_argument('-m', type=int, default=2)
     parser.add_argument('-n', type=int, default=3)
@@ -122,7 +174,7 @@ def init():
     print(xpubs)
     print(key_origins)
 
-    descriptors = get_descriptors(xpubs, key_origins)
+    descriptors = get_descriptors(args.m, xpubs, key_origins, args.datadir)
     if create_wallet_with_descriptors(args.wallet, descriptors):
         print("Successfully created a {}-of-{}, watch-only wallet: '{}'".format(args.m, args.n, args.wallet))
     else:
