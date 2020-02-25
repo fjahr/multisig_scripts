@@ -210,9 +210,9 @@ def init():
             print("Wallet '" + w + "' already exists. Please choose a different name via '-wallet [WALLET_NAME]' flag.")
             sys.exit()
 
-    # xpubs, key_origins = get_xpubs_and_origins(args.n, args.testnet)
-    xpubs = ['tpubDEi3gpBhtY2GaMUSsfukbGDQaMGGv3qiBqQ7hCkLo4uVzX2sWen9ZmG8m2f44bHpFnbe7JjVzpa2stFk5zHz355aymwrisejApq8koKnZPm', 'tpubDF2rnouQaaYrXF4noGTv6rQYmx87cQ4GrUdhpvXkhtChwQPbdGTi8GA88NUaSrwZBwNsTkC9bFkkC8vDyGBVVAQTZ2AS6gs68RQXtXcCvkP', 'tpubDF5KqurbAdsSH8S9LFGvJhv4XEZsRqWCgkXCCBYSnrNjEHxDXgzFqcKR1Q1EtFcrEqJBeTvKG2RsKhgmwCKAkHRybDve37xgWmGjzS4vgFs']
-    key_origins = ['84ef4b40', '0f056943', '8375b5d4']
+    xpubs, key_origins = get_xpubs_and_origins(args.n, args.testnet)
+    # xpubs = ['tpubDEi3gpBhtY2GaMUSsfukbGDQaMGGv3qiBqQ7hCkLo4uVzX2sWen9ZmG8m2f44bHpFnbe7JjVzpa2stFk5zHz355aymwrisejApq8koKnZPm', 'tpubDF2rnouQaaYrXF4noGTv6rQYmx87cQ4GrUdhpvXkhtChwQPbdGTi8GA88NUaSrwZBwNsTkC9bFkkC8vDyGBVVAQTZ2AS6gs68RQXtXcCvkP', 'tpubDF5KqurbAdsSH8S9LFGvJhv4XEZsRqWCgkXCCBYSnrNjEHxDXgzFqcKR1Q1EtFcrEqJBeTvKG2RsKhgmwCKAkHRybDve37xgWmGjzS4vgFs']
+    # key_origins = ['84ef4b40', '0f056943', '8375b5d4']
 
     print("XPUBs: ")
     print(xpubs)
