@@ -100,6 +100,28 @@ def get_descriptors(m, xpubs, origins, datadir):
     return descs
 
 def create_wallet_with_descriptors(wallet_name, descriptors):
+    create_args = [
+        'createwallet',
+        '"{}"'.format(wallet_name),
+        'true',
+        'true',
+        '""',
+        'true',
+        'true'
+    ]
+
+    run_bitcoincli(create_args)
+
+    descriptor_string = '[{{\"desc\": \"{}\", \"timestamp\": \"now\", \"internal\": false, \"label\": \"multisig_addresses\"}}]'.format(descriptors)
+
+    import_args = [
+        '-rpcwallet=' + wallet_name,
+        'importdescriptors',
+        descriptor_string
+    ]
+
+    run_bitcoincli(import_args)
+
     return True
 
 def get_xpubs_and_origins(num_xpubs, testnet):
