@@ -31,6 +31,8 @@ def finish():
     ]
     if args.datadir:
         combine_args.insert(0, '-datadir=' + args.datadir)
+    if args.testnet:
+        combine_args.insert(0, '-testnet')
 
     combined = subprocess.Popen(['./bitcoin-cli ' + ' '.join(combine_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True, cwd='../bitcoin/src')
     combined_result = combined.communicate()[0].decode().rstrip()
@@ -41,6 +43,8 @@ def finish():
     ]
     if args.datadir:
         finalize_args.insert(0, '-datadir=' + args.datadir)
+    if args.testnet:
+        finalize_args.insert(0, '-testnet')
     finalized = subprocess.Popen(['./bitcoin-cli ' + ' '.join(finalize_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True, cwd='../bitcoin/src')
 
     result = finalized.communicate()
@@ -52,6 +56,8 @@ def finish():
     ]
     if args.datadir:
         decode_args.insert(0, '-datadir=' + args.datadir)
+    if args.testnet:
+        decode_args.insert(0, '-testnet')
 
     decoded = subprocess.Popen(['./bitcoin-cli ' + ' '.join(decode_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True, cwd='../bitcoin/src')
 
@@ -70,6 +76,8 @@ def finish():
         ]
         if args.datadir:
             send_args.insert(0, '-datadir=' + args.datadir)
+        if args.testnet:
+            send_args.insert(0, '-testnet')
         send = subprocess.Popen(['./bitcoin-cli ' + ' '.join(send_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True, cwd='../bitcoin/src')
         result = send.communicate())
         print("sent!\n")
