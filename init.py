@@ -23,7 +23,7 @@ def run_command(args):
         cli_args.append(arg)
     #     cli_args.append(shlex.quote(arg))
     # print(' '.join(cli_args))
-    proc = subprocess.Popen(['./../src/bitcoin-cli ' + ' '.join(cli_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    proc = subprocess.Popen(['./bitcoin-cli ' + ' '.join(cli_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True, cwd='../bitcoin/src')
     result = proc.communicate()
     return json.loads(result[0].decode())
 
