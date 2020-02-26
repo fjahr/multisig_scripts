@@ -40,7 +40,7 @@ def finish():
     ]
     if args.datadir:
         finalize_args.insert(0, '-datadir=' + args.datadir)
-    finalized = subprocess.Popen(['./bitcoin-cli ' + ' '.join(finalize_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    finalized = subprocess.Popen(['./bitcoin-cli ' + ' '.join(finalize_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True, cwd='../bitcoin/src')
 
     result = finalized.communicate()
     raw_tx = json.loads(result[0].decode())['hex']
