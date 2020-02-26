@@ -43,7 +43,7 @@ def run_bitcoincli(args, return_json=False, escape_quotes=False):
             cli_args.append(shlex.quote(arg))
         else:
             cli_args.append(arg)
-    proc = subprocess.Popen(['./bitcoin-cli ' + ' '.join(cli_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True)
+    proc = subprocess.Popen(['./bitcoin-cli ' + ' '.join(cli_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True, cwd="../bitcoin/src")
     result = proc.communicate()
     if return_json:
         return_val = json.loads(result[0].decode())
@@ -195,10 +195,10 @@ def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
 def init():
     parser = argparse.ArgumentParser()
     parser.add_argument("--testnet", default=False, action="store_true" , help="sign for testnet")
-    parser.add_argument('-datadir', type=str, default="")
-    parser.add_argument('-wallet', type=str, default="multisig_bech32", help="name of multisig wallet")
-    parser.add_argument('-m', type=int, default=2)
-    parser.add_argument('-n', type=int, default=3)
+    parser.add_argument('-datadir', type=str, default="datadir for Bitcoin Core, use default datadir if not passed in")
+    parser.add_argument('-m', type=int, default=2, help="M in M-of-N")
+    parser.add_argument('-n', type=int, default=3, help="N in M-of-N")
+    parser.add_argument('-wallet', type=str, default="multisig_bech32", required=True, help="name of multisig wallet")
     args = parser.parse_args()
 
     listwallets_args = ['listwallets']
