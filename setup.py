@@ -22,11 +22,11 @@ import shlex
 # 5/ Add other metadata to the descriptors (active, range, timestamp, internal, watchonly)
 
 # 6/ Create a new wallet
-#   ./bitcoin-cli [-testnet|-mainnet] -datadir=[DATADIR] createwallet [WALLET_NAME] true true "" true true
+#   bitcoin-cli [-testnet|-mainnet] -datadir=[DATADIR] createwallet [WALLET_NAME] true true "" true true
 #   (Create a wallet that a/ has private keys disabled b/ is blank c/ has no passphrase d/ disallow coin reuse e/ is a descriptor wallet)
 
 # 7/ Import the descriptors into the new wallet
-#   ./bitcoin-cli [-testnet|-mainnet] -datadir=[DATADIR] -rpcwallet=[WALLET_NAME] importdescriptors [DESC]
+#   bitcoin-cli [-testnet|-mainnet] -datadir=[DATADIR] -rpcwallet=[WALLET_NAME] importdescriptors [DESC]
 
 def run_hwi(args):
     cli_args = []
