@@ -227,7 +227,10 @@ def init():
     print("\n")
 
     if create_wallet_with_descriptors(args.wallet, descriptors, args.datadir):
-        print("Successfully created a {}-of-{} multisig, watch-only wallet: '{}'".format(args.m, args.n, args.wallet))
+        print("Successfully created a {}-of-{} multisig, watch-only wallet: '{}'\n\n".format(args.m, args.n, args.wallet))
+        print("***IMPORTANT***\n")
+        print("PLEASE BACK UP THE DESCRIPTORS (OR WALLET.DAT)\n")
+        print("***IMPORTANT***\n")
 
 if __name__ == '__main__':
     init()
