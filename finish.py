@@ -21,6 +21,7 @@ def finish():
     parser = argparse.ArgumentParser()
     parser.add_argument("--testnet", default=False, action="store_true" , help="use testnet")
     parser.add_argument('-datadir', type=str, default="", help="datadir for Bitcoin Core, use default datadir if not passed in")
+    parser.add_argument('-wallet', type=str, required=True, help="name of multisig wallet")
     parser.add_argument('-p1', '--psbt1', type=str)
     parser.add_argument('-p2', '--psbt2', type=str)
     args = parser.parse_args()
@@ -79,7 +80,7 @@ def finish():
         if args.testnet:
             send_args.insert(0, '-testnet')
         send = subprocess.Popen(['./bitcoin-cli ' + ' '.join(send_args)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=True, cwd='../bitcoin/src')
-        result = send.communicate())
+        result = send.communicate()
         print("sent!\n")
         print("TXID: " + parsed_decoded['txid'])
     else:
