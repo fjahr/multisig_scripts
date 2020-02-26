@@ -166,7 +166,7 @@ def create_wallet_with_descriptors(wallet_name, descriptors, datadir, testnet):
         'true',
         'true',
         '""',
-        'true',
+        'false',
         'true'
     ]
 
