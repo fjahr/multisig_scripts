@@ -29,6 +29,7 @@ def run_command(args):
 
 def init():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--testnet", default=False, action="store_true" , help="use testnet")
     parser.add_argument('-datadir', type=str, default="", help="datadir for Bitcoin Core, use default datadir if not passed in")
     parser.add_argument('-wallet', type=str, default="multisig_bech32", help="name of multisig wallet")
     parser.add_argument('-a', '--amount', type=float)
@@ -44,6 +45,8 @@ def init():
                 'true']
     if args.datadir:
         fund_args.insert(0, '-datadir=' + args.datadir)
+    if args.testnet:
+        fund_args.insert(0, '-testnet')
     parsed_create = run_command(fund_args)
 
     decode_args = ['-rpcwallet=' + args.wallet,
@@ -51,6 +54,8 @@ def init():
                    parsed_create['psbt']]
     if args.datadir:
         decode_args.insert(0, '-datadir=' + args.datadir)
+    if args.testnet:
+        decode_args.insert(0, '-testnet')
     parsed_decode = run_command(decode_args)
 
     for out in parsed_decode['tx']['vout']:
