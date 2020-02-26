@@ -57,6 +57,9 @@ def get_xpubs_and_origins(num_xpubs, testnet):
     bip_32_derive_path = 'm/48h/1h/0h/2h'
     origin_derive_path = 'm/48h'
 
+    print("Collecting XPUBs... Please insert your first hardware wallet, then press Enter.\n")
+    input().lower()
+
     for _ in range(num_xpubs):
         result = run_hwi(['enumerate'])
 
