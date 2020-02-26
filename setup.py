@@ -195,7 +195,7 @@ def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
 def init():
     parser = argparse.ArgumentParser()
     parser.add_argument("--testnet", default=False, action="store_true" , help="sign for testnet")
-    parser.add_argument('-datadir', type=str, default="datadir for Bitcoin Core, use default datadir if not passed in")
+    parser.add_argument('-datadir', type=str, default="", help="datadir for Bitcoin Core, use default datadir if not passed in")
     parser.add_argument('-m', type=int, default=2, help="M in M-of-N")
     parser.add_argument('-n', type=int, default=3, help="N in M-of-N")
     parser.add_argument('-wallet', type=str, default="multisig_bech32", required=True, help="name of multisig wallet")

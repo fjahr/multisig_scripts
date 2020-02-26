@@ -29,8 +29,8 @@ def run_command(args):
 
 def init():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-datadir', type=str, default="/Users/hugohn/Projects/multisig_wallet1")
-    parser.add_argument('-wallet', type=str, default="multisig_bech32")
+    parser.add_argument('-datadir', type=str, default="", help="datadir for Bitcoin Core, use default datadir if not passed in")
+    parser.add_argument('-wallet', type=str, default="multisig_bech32", help="name of multisig wallet")
     parser.add_argument('-a', '--amount', type=float)
     parser.add_argument('-t', '--to', type=str)
     args = parser.parse_args()
