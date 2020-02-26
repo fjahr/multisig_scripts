@@ -109,7 +109,7 @@ def get_xpubs_and_origins(num_xpubs, testnet):
 
     return [xpubs, key_origins]
 
-def get_descriptors(m, xpubs, origins, datadir):
+def get_descriptors(m, xpubs, origins, datadir, testnet):
     deriv_path = "/48'/1'/0'/2'"
     descs = "["
     num_descs = 2
@@ -136,6 +136,8 @@ def get_descriptors(m, xpubs, origins, datadir):
                          desc_without_checksum]
         if datadir:
             descinfo_args.insert(0, '-datadir=' + datadir)
+        if testnet:
+            descinfo_args.insert(0, '-testnet')
         desc_with_checksum = run_bitcoincli(descinfo_args, True)['descriptor']
 
         # print(desc_with_checksum)
@@ -157,7 +159,7 @@ def get_descriptors(m, xpubs, origins, datadir):
     descs = json.dumps(descs)
     return descs
 
-def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
+def create_wallet_with_descriptors(wallet_name, descriptors, datadir, testnet):
     create_args = [
         'createwallet',
         '"{}"'.format(wallet_name),
@@ -170,6 +172,8 @@ def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
 
     if datadir:
         create_args.insert(0, '-datadir=' + datadir)
+    if testnet:
+        create_args.insert(0, '-testnet')
     create_result = run_bitcoincli(create_args, True)
     if not create_result['name']:
         print("Failed to create wallet\n")
@@ -185,6 +189,8 @@ def create_wallet_with_descriptors(wallet_name, descriptors, datadir):
     ]
     if datadir:
         import_args.insert(0, '-datadir=' + datadir)
+    if testnet:
+        import_args.insert(0, '-testnet')
 
     import_result = run_bitcoincli(import_args, True)
     for result in import_result:
@@ -207,6 +213,8 @@ def init():
     listwallets_args = ['listwallets']
     if args.datadir:
         listwallets_args.insert(0, '-datadir=' + args.datadir)
+    if args.testnet:
+        listwallets_args.insert(0, '-testnet')
     list_result = run_bitcoincli(listwallets_args, True)
     for w in list_result:
         if args.wallet == w:
@@ -224,12 +232,12 @@ def init():
     print(key_origins)
     print("\n")
 
-    descriptors = get_descriptors(args.m, xpubs, key_origins, args.datadir)
+    descriptors = get_descriptors(args.m, xpubs, key_origins, args.datadir, args.testnet)
     print("Descriptors: ")
     print(descriptors)
     print("\n")
 
-    if create_wallet_with_descriptors(args.wallet, descriptors, args.datadir):
+    if create_wallet_with_descriptors(args.wallet, descriptors, args.datadir, args.testnet):
         print("Successfully created a {}-of-{} multisig, watch-only wallet: '{}'\n\n".format(args.m, args.n, args.wallet))
         print("***IMPORTANT***\n")
         print("PLEASE BACK UP THE DESCRIPTORS (OR WALLET.DAT)\n")
